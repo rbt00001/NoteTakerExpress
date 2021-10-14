@@ -1,25 +1,51 @@
 const fs = require("fs");
 let notes = require("../db/db.json")
-const app = require("express").Router;
+const app = require("express").Router();
 
-app.get("/api/routes", function(req, res){
+app.get("/api/notes", function(req, res){
     notes = fs.readFileSync("./db/db.json")
-    console.log("get", notes)
-    res.json(notes)
+    const parsedNotes = JSON.parse(notes)
+    console.log("get", parsedNotes)
+    res.json(parsedNotes)
+    
 })
 
 
-app.post("/api/routes", function(req, res){
+app.post("/api/notes", function(req, res){
+    const parsedNotes = JSON.parse(notes)
+
     let newNote = {
         id: Math.floor(Math.random() * 1000 ),
         title: req.body.title,
         next: req.body.text
     }
-    notes.push(newNote)
-    fs.writeFileSync("./db/db.json", notes, function(err, data) {
+    parsedNotes.push(newNote)
+
+    fs.writeFileSync("./db/db.json", JSON.stringify(parsedNotes), function(err, data) {
         if (err) throw err;
     })
 
-    console.log("post", notes)
-    res.json(notes)
+    console.log("post", parsedNotes)
+    res.json(parsedNotes)
 })
+
+
+app.delete("/api/notes/:id", function(req, res){
+    const parsedNotes = JSON.parse(notes)
+    let updatedNotes = []
+    for (let i = 0; i > parsedNotes.length; i++) {
+        if (parsedNotes[i] != req.params.id) {
+            updatedNotes.push(parsedNotes[i])
+        } 
+    };
+    parsedNotes = updatedNotes;
+
+    fs.writeFileSync("./db/db.json", JSON.stringify(parsedNotes), function(err, data) {
+        if (err) throw err;
+    })
+
+    console.log("delete", parsedNotes)
+    res.json(parsedNotes)
+})
+
+module.exports = app; 
